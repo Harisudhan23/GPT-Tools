@@ -4,24 +4,23 @@ import os
 from langchain_google_genai.chat_models import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 
-# Load environment variables from a .env file
 load_dotenv()
 
 def get_genai_response(question):
     # Retrieve API key from environment variables
-    google_api_key = os.getenv("GOOGLE_API_KEY")
+    #google_api_key = os.getenv("GOOGLE_API_KEY")
     
     # Initialize the language model with the API key
-    llm = ChatGoogleGenerativeAI(google_api_key=google_api_key, model="gemini-1.5-flash", temperature=0.5)  # Updated model name
+    llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.5)  # Updated model name
     
     # Format the input as a list of messages
-    messages = [{"role": "user", "content": question}]
+    #messages = [{"role": "user", "content": question}]
     
     # Get the response from the model
-    response = llm.invoke(messages=messages)
+    response = llm.invoke(question)
     
     # Return the response content
-    return response.get("content", "No response received.")
+    return response
 
 # Streamlit app setup
 st.set_page_config(page_title="Q&A Demo")
