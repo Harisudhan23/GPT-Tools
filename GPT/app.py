@@ -1,51 +1,40 @@
-from langchain_groq import ChatGroq
-from dotenv import load_dotenv
+# Conversational Q&A Chatbot
 import streamlit as st
+
+from langchain.schema import HumanMessage,SystemMessage,AIMessage
+from langchain_google_genai.chat_models import ChatGoogleGenerativeAI
+
+## Streamlit UI
+st.set_page_config(page_title="Conversational Q&A Chatbot")
+st.header("Hey, Let's Chat")
+
+from dotenv import load_dotenv
+load_dotenv()
 import os
 
-# Load environment variables
-load_dotenv()
+chat=ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.5)
 
-# Set up API keys
-groq_api_key = os.getenv("GOQ_API_KEY")
-os.environ['GOOGLE_API_KEY'] = os.getenv("GOOGLE_API_KEY")
-LANGCHAIN_TRACING_V2="true"
-LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
-LANGCHAIN_API_KEY="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"
-LANGCHAIN_PROJECT="pr-enchanted-casserole-97"
-# Initialize Langchain Google Generative AI model
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.schema import HumanMessage
+if 'flowmessages' not in st.session_state:
+    st.session_state['flowmessages']=[
+        SystemMessage(content="Yor are an AI assitant")
+    ]
 
-def get_response(question):
-    chatllm = ChatGoogleGenerativeAI(
-        model="gemini-1.5-pro",
-        temperature=0.5,  # Adjusted temperature for variety
-        max_tokens=150,   # Set max tokens to avoid None issues
-        timeout=None,
-        max_retries=2,
-    )
-    response = chatllm([HumanMessage(content=question)])
-    return response
+## Function to load OpenAI model and get respones
 
-# Streamlit UI setup
-st.set_page_config(page_title="QA BOT")
+def get_chatmodel_response(question):
 
-# Input field for user question
-input_text = st.text_input("Input: ", key="input")
+    st.session_state['flowmessages'].append(HumanMessage(content=question))
+    answer=chat(st.session_state['flowmessages'])
+    st.session_state['flowmessages'].append(AIMessage(content=answer.content))
+    return answer.content
 
-# Submit button for generating response
-submit = st.button("Ask Question")
+input=st.text_input("Input: ",key="input")
+response=get_chatmodel_response(input)
+
+submit=st.button("Ask the question")
+
+## If ask button is clicked
 
 if submit:
-    if input_text:  # Ensure there is input
-        response = get_response(input_text)  # Get the response
-        st.subheader("The response is:")
-        
-        # Check if response has content
-        if response and response.content:
-            st.write(response.content)  # Display the response content
-        else:
-            st.write("No content received. Please try a different question.")  # Fallback message
-    else:
-        st.write("Please enter a question.")
+    st.subheader("The Response is")
+    st.write(response)
